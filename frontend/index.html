@@ -314,7 +314,6 @@
     <p>AI-powered document extraction, validation and persistence platform</p>
 </header>
 
-
 <div class="container">
 
     <!-- Dashboard -->
@@ -342,7 +341,6 @@
 
     </div>
 
-
     <!-- Upload Section -->
     <div class="card">
 
@@ -356,7 +354,6 @@
             <option value="profit_loss">Profit & Loss</option>
             <option value="cash_flow">Cash Flow Statement</option>
         </select>
-
 
         <label for="documentFile">Select File</label>
 
@@ -373,7 +370,6 @@
         <div id="message"></div>
 
     </div>
-
 
     <!-- Documents List -->
     <div class="card">
@@ -406,7 +402,6 @@
 
     </div>
 
-
     <!-- Extraction Results -->
     <div class="card">
 
@@ -422,10 +417,10 @@
 
 </div>
 
-
 <script>
 
-    const API_BASE = "http://127.0.0.1:8000";
+    // Deployed FastAPI backend
+    const API_BASE = "https://ai-document-intelligence-9m1p.onrender.com";
 
 
     function showMessage(message, type) {
@@ -738,7 +733,7 @@
         }
 
 
-        table.innerHTML = documents.map((document, index) => {
+        table.innerHTML = documents.map((document) => {
 
             const filename = document.filename || "-";
             const documentType = document.document_type || "-";
