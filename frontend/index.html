@@ -341,6 +341,7 @@
 
     </div>
 
+
     <!-- Upload Section -->
     <div class="card">
 
@@ -370,6 +371,7 @@
         <div id="message"></div>
 
     </div>
+
 
     <!-- Documents List -->
     <div class="card">
@@ -402,6 +404,7 @@
 
     </div>
 
+
     <!-- Extraction Results -->
     <div class="card">
 
@@ -417,11 +420,20 @@
 
 </div>
 
+
 <script>
 
-    // Deployed FastAPI backend
-    const API_BASE = "https://ai-document-intelligence-9m1p.onrender.com";
+    // =====================================================
+    // DEPLOYED FASTAPI BACKEND
+    // =====================================================
 
+    const API_BASE =
+        "https://ai-document-intelligence-backend-3ohl.onrender.com";
+
+
+    // =====================================================
+    // MESSAGE FUNCTIONS
+    // =====================================================
 
     function showMessage(message, type) {
 
@@ -441,6 +453,10 @@
         messageBox.textContent = "";
     }
 
+
+    // =====================================================
+    // SECURITY / FORMATTING HELPERS
+    // =====================================================
 
     function escapeHtml(value) {
 
@@ -496,25 +512,6 @@
     }
 
 
-    /*
-        The API may return either:
-
-        [
-            {...},
-            {...}
-        ]
-
-        OR:
-
-        {
-            "documents": [
-                {...},
-                {...}
-            ]
-        }
-
-        This function supports both formats.
-    */
     function normalizeDocumentsResponse(data) {
 
         if (Array.isArray(data)) {
@@ -533,11 +530,16 @@
     }
 
 
+    // =====================================================
+    // PROCESS DOCUMENT
+    // =====================================================
+
     async function processDocument() {
 
         const fileInput = document.getElementById("documentFile");
         const typeInput = document.getElementById("documentType");
         const button = document.getElementById("processButton");
+
 
         if (!fileInput.files.length) {
 
@@ -552,6 +554,7 @@
 
         const selectedFile = fileInput.files[0];
 
+
         const allowedExtensions = [
             ".pdf",
             ".jpg",
@@ -559,7 +562,10 @@
             ".png"
         ];
 
-        const extension = "." + selectedFile.name.split(".").pop().toLowerCase();
+
+        const extension =
+            "." + selectedFile.name.split(".").pop().toLowerCase();
+
 
         if (!allowedExtensions.includes(extension)) {
 
@@ -580,6 +586,7 @@
 
         button.disabled = true;
         button.textContent = "Processing...";
+
 
         showMessage(
             "Document is being processed. This may take some time.",
@@ -614,27 +621,35 @@
 
             displayResult(result);
 
+
             fileInput.value = "";
 
+
             await loadDocuments();
+
 
         } catch (error) {
 
             console.error(error);
+
 
             showMessage(
                 error.message || "Document processing failed.",
                 "error"
             );
 
+
         } finally {
 
             button.disabled = false;
             button.textContent = "Process Document";
         }
-
     }
 
+
+    // =====================================================
+    // LOAD ALL DOCUMENTS
+    // =====================================================
 
     async function loadDocuments() {
 
@@ -652,11 +667,11 @@
 
             const data = await response.json();
 
+
             const documents = normalizeDocumentsResponse(data);
 
 
             updateDashboard(documents);
-
             renderDocumentsTable(documents);
 
 
@@ -664,10 +679,12 @@
 
             console.error(error);
 
+
             showMessage(
                 "Could not load documents: " + error.message,
                 "error"
             );
+
 
             document.getElementById("documentsTable").innerHTML = `
                 <tr>
@@ -677,18 +694,20 @@
                 </tr>
             `;
         }
-
     }
 
+
+    // =====================================================
+    // DASHBOARD STATISTICS
+    // =====================================================
 
     function updateDashboard(documents) {
 
         const total = documents.length;
 
+
         const successful = documents.filter(document => {
-
             return document.overall_status === "PASS";
-
         }).length;
 
 
@@ -708,11 +727,21 @@
 
 
         document.getElementById("totalDocuments").textContent = total;
-        document.getElementById("successfulDocuments").textContent = successful;
-        document.getElementById("failedDocuments").textContent = failed;
-        document.getElementById("notApplicableDocuments").textContent = notApplicable;
+
+        document.getElementById("successfulDocuments").textContent =
+            successful;
+
+        document.getElementById("failedDocuments").textContent =
+            failed;
+
+        document.getElementById("notApplicableDocuments").textContent =
+            notApplicable;
     }
 
+
+    // =====================================================
+    // RENDER DOCUMENT TABLE
+    // =====================================================
 
     function renderDocumentsTable(documents) {
 
@@ -771,6 +800,10 @@
     }
 
 
+    // =====================================================
+    // LOAD SINGLE DOCUMENT
+    // =====================================================
+
     async function loadDocument(filename) {
 
         try {
@@ -795,14 +828,18 @@
 
             console.error(error);
 
+
             showMessage(
                 error.message || "Could not load document.",
                 "error"
             );
         }
-
     }
 
+
+    // =====================================================
+    // DISPLAY EXTRACTION RESULT
+    // =====================================================
 
     function displayResult(result) {
 
@@ -810,6 +847,8 @@
 
 
         const extractedData = result.extracted_data || {};
+
+
         const validations = Array.isArray(result.validations)
             ? result.validations
             : [];
@@ -825,6 +864,7 @@
 
             <h3>${escapeHtml(filename)}</h3>
 
+
             <div class="result-grid">
 
                 <div class="result-item">
@@ -832,22 +872,28 @@
                     ${escapeHtml(documentType)}
                 </div>
 
+
                 <div class="result-item">
                     <strong>Processing Status</strong>
+
                     <span class="status ${escapeHtml(status)}">
                         ${escapeHtml(status)}
                     </span>
                 </div>
 
+
                 <div class="result-item">
                     <strong>Overall Validation Result</strong>
+
                     <span class="status ${escapeHtml(overallStatus)}">
                         ${escapeHtml(overallStatus)}
                     </span>
                 </div>
 
+
                 <div class="result-item">
                     <strong>Created At</strong>
+
                     ${escapeHtml(formatDate(result.created_at))}
                 </div>
 
@@ -873,6 +919,7 @@
                 Validation Results
             </h3>
 
+
             ${renderValidations(validations)}
 
 
@@ -880,11 +927,16 @@
                 Extracted Data
             </h3>
 
+
             ${renderExtractedData(extractedData)}
 
         `;
     }
 
+
+    // =====================================================
+    // RENDER VALIDATIONS
+    // =====================================================
 
     function renderValidations(validations) {
 
@@ -911,6 +963,7 @@
                     </tr>
                 </thead>
 
+
                 <tbody>
 
                     ${validations.map(validation => {
@@ -918,6 +971,7 @@
                         const status = validation.status || "-";
 
                         let rowClass = "";
+
 
                         if (status === "PASS") {
                             rowClass = "validation-pass";
@@ -939,11 +993,13 @@
                                     )}
                                 </td>
 
+
                                 <td>
                                     ${escapeHtml(
                                         validation.calculated ?? "-"
                                     )}
                                 </td>
+
 
                                 <td>
                                     ${escapeHtml(
@@ -951,11 +1007,13 @@
                                     )}
                                 </td>
 
+
                                 <td>
                                     ${escapeHtml(
                                         validation.variance ?? "-"
                                     )}
                                 </td>
+
 
                                 <td class="status ${escapeHtml(status)}">
                                     ${escapeHtml(status)}
@@ -972,6 +1030,10 @@
         `;
     }
 
+
+    // =====================================================
+    // RENDER EXTRACTED DATA
+    // =====================================================
 
     function renderExtractedData(data) {
 
@@ -993,7 +1055,10 @@
     }
 
 
-    // Load saved documents when the page opens.
+    // =====================================================
+    // INITIAL PAGE LOAD
+    // =====================================================
+
     loadDocuments();
 
 </script>
