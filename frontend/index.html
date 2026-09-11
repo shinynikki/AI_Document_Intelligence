@@ -427,7 +427,8 @@
     // DEPLOYED FASTAPI BACKEND
     // =====================================================
 
-    const API_BASE = "https://ai-document-intelligence-backend-3ohl.onrender.com";
+    const API_BASE =
+        "https://ai-document-intelligence-backend-3ohl.onrender.com";
 
 
     // =====================================================
@@ -508,6 +509,24 @@
         }
 
         return "Document processing failed.";
+    }
+
+
+    async function parseResponse(response) {
+
+        const text = await response.text();
+
+        if (!text) {
+            return {};
+        }
+
+        try {
+            return JSON.parse(text);
+        } catch {
+            return {
+                detail: text
+            };
+        }
     }
 
 
@@ -604,7 +623,7 @@
             );
 
 
-            const result = await response.json();
+            const result = await parseResponse(response);
 
 
             if (!response.ok) {
@@ -637,7 +656,6 @@
                 "error"
             );
 
-
         } finally {
 
             button.disabled = false;
@@ -659,12 +677,12 @@
             );
 
 
+            const data = await parseResponse(response);
+
+
             if (!response.ok) {
-                throw new Error("Could not load documents.");
+                throw new Error(getErrorMessage(data));
             }
-
-
-            const data = await response.json();
 
 
             const documents = normalizeDocumentsResponse(data);
@@ -803,16 +821,19 @@
     // LOAD SINGLE DOCUMENT
     // =====================================================
 
-    async function loadDocument(filename) {
+    async function loadDocument(encodedFilename) {
 
         try {
 
+            const filename = decodeURIComponent(encodedFilename);
+
+
             const response = await fetch(
-                `${API_BASE}/api/v1/documents/${filename}`
+                `${API_BASE}/api/v1/documents/${encodeURIComponent(filename)}`
             );
 
 
-            const result = await response.json();
+            const result = await parseResponse(response);
 
 
             if (!response.ok) {
