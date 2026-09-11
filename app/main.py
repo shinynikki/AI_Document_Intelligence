@@ -36,7 +36,7 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://ai-document-intelligence-1-yi32.onrender.com",
+        "https://ai-document-intelligence-frontend-cye5.onrender.com",
     ],
     allow_credentials=True,
     allow_methods=["*"],
