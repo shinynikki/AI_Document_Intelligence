@@ -1,5 +1,6 @@
 import os
 import time
+import mimetypes
 
 from dotenv import load_dotenv
 from google import genai
@@ -20,7 +21,16 @@ from app.services.financial_validation import (
 load_dotenv()
 
 api_key = os.getenv("GEMINI_API_KEY")
-model = os.getenv("GEMINI_MODEL")
+model = os.getenv(
+    "GEMINI_MODEL",
+    "gemini-3.6-flash"
+)
+
+
+if not api_key:
+    raise RuntimeError(
+        "GEMINI_API_KEY environment variable is missing."
+    )
 
 
 # =========================================================
@@ -32,16 +42,20 @@ client = genai.Client(
 )
 
 
+# =========================================================
+# Invoice Extraction
+# =========================================================
+
 def extract_invoice(image_path, ocr_text):
     """
     Extract structured invoice information using:
 
-    1. The original invoice image
+    1. The original invoice image/PDF
     2. OCR text from Tesseract
     3. Gemini for semantic extraction
 
-    The image is the primary source for understanding
-    the document layout and table structure.
+    The original document is the primary source for
+    understanding the document layout and table structure.
     """
 
     prompt = f"""
@@ -49,14 +63,14 @@ You are extracting structured information from a financial invoice.
 
 You have TWO sources of information:
 
-1. The original invoice image.
+1. The original invoice document.
    Use this to understand the visual layout, table rows,
    columns and relationships between values.
 
 2. OCR text produced by Tesseract.
    Use this as searchable text to help read the document.
 
-The original invoice image is the primary source for understanding
+The original document is the primary source for understanding
 the table structure. The OCR text is supporting information.
 
 IMPORTANT RULES:
@@ -122,11 +136,11 @@ IMPORTANT RULES:
 
 24. Return ONLY JSON matching the provided schema.
 
-25. Treat the original image as the source of truth when OCR text
+25. Treat the original document as the source of truth when OCR text
     contains obvious recognition errors.
 
 26. Do not interpret corrupted OCR characters as valid numbers
-    unless the value is clearly supported by the invoice image.
+    unless the value is clearly supported by the original document.
 
 27. If a numeric value cannot be reliably associated with the
     correct table column or row, return null.
@@ -157,33 +171,51 @@ Here is the OCR text:
 """
 
     # =========================================================
-    # Read original invoice image
+    # Read Original Document
     # =========================================================
 
     with open(image_path, "rb") as file:
         image_bytes = file.read()
 
+
     # =========================================================
-    # Create image input for Gemini
+    # Detect Correct MIME Type
+    # =========================================================
+
+    mime_type, _ = mimetypes.guess_type(
+        str(image_path)
+    )
+
+    if mime_type is None:
+        mime_type = "application/octet-stream"
+
+
+    # =========================================================
+    # Create Gemini Document Input
     # =========================================================
 
     image_part = types.Part.from_bytes(
         data=image_bytes,
-        mime_type="image/jpeg"
+        mime_type=mime_type
     )
 
+
     # =========================================================
-    # Send request to Gemini
-    # Retry only temporary 503 errors.
+    # Send Request to Gemini
+    # Retry Only Temporary 503 Errors
     # =========================================================
+
+    response = None
 
     for attempt in range(3):
 
         try:
+
             print(
                 f"\nSending request to Gemini "
                 f"(attempt {attempt + 1}/3)..."
             )
+
 
             response = client.models.generate_content(
                 model=model,
@@ -199,21 +231,31 @@ Here is the OCR text:
 
             break
 
+
         except Exception as error:
 
             error_message = str(error)
 
-            # Do not retry non-temporary errors.
+
+            # -------------------------------------------------
+            # Do Not Retry Non-Temporary Errors
+            # -------------------------------------------------
+
             if "503" not in error_message:
 
                 print("\nGemini request failed:")
                 print(error_message)
 
-                raise error
+                raise
 
-            # If this was the final attempt, raise the error.
+
+            # -------------------------------------------------
+            # Final Attempt Failed
+            # -------------------------------------------------
+
             if attempt == 2:
-                raise error
+                raise
+
 
             print(
                 "\nGemini is temporarily unavailable."
@@ -225,9 +267,17 @@ Here is the OCR text:
 
             time.sleep(5)
 
+
     # =========================================================
-    # Validate Gemini response using Pydantic
+    # Validate Gemini Response Using Pydantic
     # =========================================================
+
+    if response is None or not response.text:
+
+        raise ValueError(
+            "Gemini returned an empty response."
+        )
+
 
     invoice = InvoiceData.model_validate_json(
         response.text
@@ -237,7 +287,7 @@ Here is the OCR text:
 
 
 # =========================================================
-# Test extraction
+# Test Extraction
 # =========================================================
 
 if __name__ == "__main__":
@@ -245,6 +295,7 @@ if __name__ == "__main__":
     file_path = (
         "New Dataset/Invoices/20251118_000612.jpg"
     )
+
 
     # ---------------------------------------------------------
     # Run OCR
@@ -259,24 +310,28 @@ if __name__ == "__main__":
         for page in ocr_result["pages"]
     )
 
+
     print(
         "\n========== OCR TEXT ==========\n"
     )
 
     print(ocr_text)
 
+
     print(
         "\n========== END OCR TEXT ==========\n"
     )
 
+
     # ---------------------------------------------------------
-    # Extract invoice using Gemini
+    # Extract Invoice Using Gemini
     # ---------------------------------------------------------
 
     result = extract_invoice(
         file_path,
         ocr_text
     )
+
 
     print(
         "\n========== EXTRACTED JSON ==========\n"
@@ -288,13 +343,15 @@ if __name__ == "__main__":
         )
     )
 
+
     # ---------------------------------------------------------
-    # Run financial validation
+    # Run Financial Validation
     # ---------------------------------------------------------
 
     validations = validate_invoice(
         result
     )
+
 
     print(
         "\n========== VALIDATION RESULTS ==========\n"
@@ -303,13 +360,15 @@ if __name__ == "__main__":
     for validation in validations:
         print(validation)
 
+
     # ---------------------------------------------------------
-    # Calculate overall status
+    # Calculate Overall Status
     # ---------------------------------------------------------
 
     overall_status = get_overall_status(
         validations
     )
+
 
     print(
         "\n========== OVERALL STATUS ==========\n"
