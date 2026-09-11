@@ -1,0 +1,305 @@
+
+                    {
+  "statement_title": "Consolidated Balance Sheet",
+  "unit": "₹ in crore",
+  "periods": [
+    "March 31, 2022",
+    "March 31, 2021"
+  ],
+  "liabilities": [
+    {
+      "label": "Capital",
+      "values": [
+        {
+          "period": "March 31, 2022",
+          "value": 554.55
+        },
+        {
+          "period": "March 31, 2021",
+          "value": 551.28
+        }
+      ],
+      "evidence": {
+        "text": "Capital 1 554.55 551.28",
+        "page_number": 1
+      }
+    },
+    {
+      "label": "Reserves and surplus",
+      "values": [
+        {
+          "period": "March 31, 2022",
+          "value": 246771.62
+        },
+        {
+          "period": "March 31, 2021",
+          "value": 209258.9
+        }
+      ],
+      "evidence": {
+        "text": "Reserves and surplus 2 246,771.62 209,258.90",
+        "page_number": 1
+      }
+    },
+    {
+      "label": "Minority interest",
+      "values": [
+        {
+          "period": "March 31, 2022",
+          "value": 720.41
+        },
+        {
+          "period": "March 31, 2021",
+          "value": 632.76
+        }
+      ],
+      "evidence": {
+        "text": "Minority interest 2A 720.41 632.76",
+        "page_number": 1
+      }
+    },
+    {
+      "label": "Deposits",
+      "values": [
+        {
+          "period": "March 31, 2022",
+          "value": 1558003.03
+        },
+        {
+          "period": "March 31, 2021",
+          "value": 1333720.87
+        }
+      ],
+      "evidence": {
+        "text": "Deposits 3 1,558,003.03 1,333,720.87",
+        "page_number": 1
+      }
+    },
+    {
+      "label": "Borrowings",
+      "values": [
+        {
+          "period": "March 31, 2022",
+          "value": 226966.5
+        },
+        {
+          "period": "March 31, 2021",
+          "value": 177696.75
+        }
+      ],
+      "evidence": {
+        "text": "Borrowings 4 226,966.50 177,696.75",
+        "page_number": 1
+      }
+    },
+    {
+      "label": "Other liabilities and provisions",
+      "values": [
+        {
+          "period": "March 31, 2022",
+          "value": 89918.19
+        },
+        {
+          "period": "March 31, 2021",
+          "value": 77646.07
+        }
+      ],
+      "evidence": {
+        "text": "Other liabilities and provisions 5 89,918.19 77,646.07",
+        "page_number": 1
+      }
+    },
+    {
+      "label": "Total",
+      "values": [
+        {
+          "period": "March 31, 2022",
+          "value": 2122934.3
+        },
+        {
+          "period": "March 31, 2021",
+          "value": 1799506.63
+        }
+      ],
+      "evidence": {
+        "text": "Total 2,122,934.30 1,799,506.63",
+        "page_number": 1
+      }
+    }
+  ],
+  "assets": [
+    {
+      "label": "Cash and balances with Reserve Bank of India",
+      "values": [
+        {
+          "period": "March 31, 2022",
+          "value": 130030.71
+        },
+        {
+          "period": "March 31, 2021",
+          "value": 97370.35
+        }
+      ],
+      "evidence": {
+        "text": "Cash and balances with Reserve Bank of India 6 130,030.71 97,370.35",
+        "page_number": 1
+      }
+    },
+    {
+      "label": "Balances with banks and money at call and short notice",
+      "values": [
+        {
+          "period": "March 31, 2022",
+          "value": 25355.02
+        },
+        {
+          "period": "March 31, 2021",
+          "value": 23902.16
+        }
+      ],
+      "evidence": {
+        "text": "Balances with banks and money at call and short notice 7 25,355.02 23,902.16",
+        "page_number": 1
+      }
+    },
+    {
+      "label": "Investments",
+      "values": [
+        {
+          "period": "March 31, 2022",
+          "value": 449263.86
+        },
+        {
+          "period": "March 31, 2021",
+          "value": 438823.11
+        }
+      ],
+      "evidence": {
+        "text": "Investments 8 449,263.86 438,823.11",
+        "page_number": 1
+      }
+    },
+    {
+      "label": "Advances",
+      "values": [
+        {
+          "period": "March 31, 2022",
+          "value": 1420942.28
+        },
+        {
+          "period": "March 31, 2021",
+          "value": 1185283.52
+        }
+      ],
+      "evidence": {
+        "text": "Advances 9 1,420,942.28 1,185,283.52",
+        "page_number": 1
+      }
+    },
+    {
+      "label": "Fixed assets",
+      "values": [
+        {
+          "period": "March 31, 2022",
+          "value": 6283.28
+        },
+        {
+          "period": "March 31, 2021",
+          "value": 5099.56
+        }
+      ],
+      "evidence": {
+        "text": "Fixed assets 10 6,283.28 5,099.56",
+        "page_number": 1
+      }
+    },
+    {
+      "label": "Other assets",
+      "values": [
+        {
+          "period": "March 31, 2022",
+          "value": 90910.36
+        },
+        {
+          "period": "March 31, 2021",
+          "value": 48879.14
+        }
+      ],
+      "evidence": {
+        "text": "Other assets 11 90,910.36 48,879.14",
+        "page_number": 1
+      }
+    },
+    {
+      "label": "Goodwill on Consolidation",
+      "values": [
+        {
+          "period": "March 31, 2022",
+          "value": 148.79
+        },
+        {
+          "period": "March 31, 2021",
+          "value": 148.79
+        }
+      ],
+      "evidence": {
+        "text": "Goodwill on Consolidation 148.79 148.79",
+        "page_number": 1
+      }
+    },
+    {
+      "label": "Total",
+      "values": [
+        {
+          "period": "March 31, 2022",
+          "value": 2122934.3
+        },
+        {
+          "period": "March 31, 2021",
+          "value": 1799506.63
+        }
+      ],
+      "evidence": {
+        "text": "Total 2,122,934.30 1,799,506.63",
+        "page_number": 1
+      }
+    }
+  ],
+  "other_items": [
+    {
+      "label": "Contingent liabilities",
+      "values": [
+        {
+          "period": "March 31, 2022",
+          "value": 1400197.64
+        },
+        {
+          "period": "March 31, 2021",
+          "value": 975280.66
+        }
+      ],
+      "evidence": {
+        "text": "Contingent liabilities 12 1,400,197.64 975,280.66",
+        "page_number": 1
+      }
+    },
+    {
+      "label": "Bills for collection",
+      "values": [
+        {
+          "period": "March 31, 2022",
+          "value": 56968.05
+        },
+        {
+          "period": "March 31, 2021",
+          "value": 44748.14
+        }
+      ],
+      "evidence": {
+        "text": "Bills for collection 56,968.05 44,748.14",
+        "page_number": 1
+      }
+    }
+  ]
+}
+                

@@ -1,0 +1,160 @@
+                    {
+  "invoice_number": "94404257",
+  "invoice_date": "07/03/2013",
+  "currency": "$",
+  "seller": {
+    "name": "Cruz PLC",
+    "address": "USNV Harris, FPO AA 34966",
+    "gstin": "964-99-8203",
+    "email": null,
+    "phone": null,
+    "salesman": null,
+    "market_area": null
+  },
+  "buyer": {
+    "name": "Sandoval-Phillips",
+    "address": "23699 James Villages Suite 818, West Tamara, MS 58825",
+    "gstin": "976-94-5245",
+    "email": null,
+    "phone": null,
+    "salesman": null,
+    "market_area": null
+  },
+  "line_items": [
+    {
+      "description": "B0028NAO6C Shoeless Joe",
+      "hsn_sac": null,
+      "quantity": 5,
+      "unit": "each",
+      "unit_price": 3.49,
+      "discount": null,
+      "taxable_amount": 17.45,
+      "tax_rate": 10,
+      "tax_amount": null,
+      "amount": 19.2,
+      "evidence": {
+        "text": "1. B0028NAO6C Shoeless Joe 5,00 each 3,49 17,45 10% 19,20",
+        "page_number": 1
+      }
+    },
+    {
+      "description": "The Fifty Greatest Conspiracies of All Time History s Biggest Myster",
+      "hsn_sac": null,
+      "quantity": 3,
+      "unit": "each",
+      "unit_price": 4.49,
+      "discount": null,
+      "taxable_amount": 13.47,
+      "tax_rate": 10,
+      "tax_amount": null,
+      "amount": 14.82,
+      "evidence": {
+        "text": "2. The Fifty Greatest Conspiracies of All Time History s Biggest Myster 3,00 each 4,49 13,47 10% 14,82",
+        "page_number": 1
+      }
+    },
+    {
+      "description": "Story of a Soul: The Autobiography of St. Therese of Lisieux",
+      "hsn_sac": null,
+      "quantity": 5,
+      "unit": "each",
+      "unit_price": 9.35,
+      "discount": null,
+      "taxable_amount": 46.75,
+      "tax_rate": 10,
+      "tax_amount": null,
+      "amount": 51.42,
+      "evidence": {
+        "text": "3. Story of a Soul: The Autobiography of St. Therese of Lisieux 5,00 each 9,35 46,75 10% 51,42",
+        "page_number": 1
+      }
+    },
+    {
+      "description": "The Complete Idiots Guide to Trouble-Free Home Re",
+      "hsn_sac": null,
+      "quantity": 4,
+      "unit": "each",
+      "unit_price": 4.49,
+      "discount": null,
+      "taxable_amount": 17.96,
+      "tax_rate": 10,
+      "tax_amount": null,
+      "amount": 19.76,
+      "evidence": {
+        "text": "4. The Complete Idiots Guide to Trouble-Free Home Re 4,00 each 4,49 17,96 10% 19,76",
+        "page_number": 1
+      }
+    },
+    {
+      "description": "Rebecca to the Rescue (American Girl (Quality))",
+      "hsn_sac": null,
+      "quantity": 2,
+      "unit": "each",
+      "unit_price": 4.89,
+      "discount": null,
+      "taxable_amount": 9.78,
+      "tax_rate": 10,
+      "tax_amount": null,
+      "amount": 10.76,
+      "evidence": {
+        "text": "5. Rebecca to the Rescue (American Girl (Quality)) 2,00 each 4,89 9,78 10% 10,76",
+        "page_number": 1
+      }
+    },
+    {
+      "description": "Tales from the Buffalo Bills",
+      "hsn_sac": null,
+      "quantity": 1,
+      "unit": "each",
+      "unit_price": 5.5,
+      "discount": null,
+      "taxable_amount": 5.5,
+      "tax_rate": 10,
+      "tax_amount": null,
+      "amount": 6.05,
+      "evidence": {
+        "text": "6. Tales from the Buffalo Bills 1,00 each 5,50 5,50 10% 6,05",
+        "page_number": 1
+      }
+    },
+    {
+      "description": "Vietnam, The Decisive Battles",
+      "hsn_sac": null,
+      "quantity": 2,
+      "unit": "each",
+      "unit_price": 7.68,
+      "discount": null,
+      "taxable_amount": 15.36,
+      "tax_rate": 10,
+      "tax_amount": null,
+      "amount": 16.9,
+      "evidence": {
+        "text": "7. Vietnam, The Decisive Battles 2,00 each 7,68 15,36 10% 16,90",
+        "page_number": 1
+      }
+    }
+  ],
+  "subtotal": 126.27,
+  "discount": null,
+  "taxable_amount": 126.27,
+  "tax_amount": 12.63,
+  "round_off": null,
+  "total_amount": 138.9,
+  "tax_breakdown": [
+    {
+      "tax_type": "VAT",
+      "rate": 10,
+      "amount": 12.63
+    }
+  ],
+  "payment_details": null,
+  "bank_details": {
+    "bank_name": null,
+    "account_number": "GB31XOVK34958853133204",
+    "branch": null,
+    "ifsc_code": null
+  },
+  "references": null,
+  "other_fields": null
+}
+                
