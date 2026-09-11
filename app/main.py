@@ -7,13 +7,31 @@ from fastapi.responses import FileResponse
 from app.core.database import Base, engine
 from app.routes.documents import router as documents_router
 
+
+# =========================================================
+# DATABASE INITIALIZATION
+# =========================================================
+
 Base.metadata.create_all(bind=engine)
+
+
+# =========================================================
+# FASTAPI APPLICATION
+# =========================================================
 
 app = FastAPI(
     title="Intelligent Document Extraction API",
-    description="AI-powered document extraction, validation and persistence platform.",
+    description=(
+        "AI-powered document extraction, validation and "
+        "persistence platform."
+    ),
     version="1.0.0",
 )
+
+
+# =========================================================
+# CORS CONFIGURATION
+# =========================================================
 
 app.add_middleware(
     CORSMiddleware,
@@ -25,8 +43,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+# =========================================================
+# ROUTERS
+# =========================================================
+
 app.include_router(documents_router)
 
+
+# =========================================================
+# HEALTH CHECK
+# =========================================================
 
 @app.get("/api/v1/health", tags=["Health"])
 def health_check():
@@ -44,6 +71,10 @@ def api_root():
         "health": "/api/v1/health",
     }
 
+
+# =========================================================
+# FRONTEND SERVING
+# =========================================================
 
 frontend_path = Path(__file__).resolve().parent.parent / "frontend"
 

@@ -41,7 +41,7 @@ router = APIRouter(
 # =========================================================
 
 UPLOAD_DIRECTORY = Path("uploads")
-UPLOAD_DIRECTORY.mkdir(exist_ok=True)
+UPLOAD_DIRECTORY.mkdir(parents=True, exist_ok=True)
 
 
 # =========================================================
@@ -72,9 +72,11 @@ def serialize_document(document):
         "status": document.status,
         "overall_status": document.overall_status,
         "error_message": document.error_message,
-        "created_at": document.created_at.isoformat()
-        if document.created_at
-        else None,
+        "created_at": (
+            document.created_at.isoformat()
+            if document.created_at
+            else None
+        ),
     }
 
 
@@ -104,9 +106,11 @@ def serialize_full_document(document):
         "overall_status": document.overall_status,
         "error_message": document.error_message,
 
-        "created_at": document.created_at.isoformat()
-        if document.created_at
-        else None,
+        "created_at": (
+            document.created_at.isoformat()
+            if document.created_at
+            else None
+        ),
     }
 
 
@@ -216,16 +220,12 @@ async def process_uploaded_document(
         db.commit()
         db.refresh(document)
 
-        # -------------------------------------------------
-        # Return successful response
-        # -------------------------------------------------
-
         return serialize_full_document(document)
 
     except Exception as error:
 
         # =================================================
-        # Roll back any failed database transaction
+        # Roll back failed database transaction
         # =================================================
 
         db.rollback()
@@ -259,10 +259,6 @@ async def process_uploaded_document(
                 detail="Document processing failed and could not be saved.",
             )
 
-        # -------------------------------------------------
-        # Return processing error
-        # -------------------------------------------------
-
         raise HTTPException(
             status_code=422,
             detail={
@@ -285,10 +281,6 @@ def get_all_documents(
     Return all processed documents.
 
     Latest documents appear first.
-
-    IMPORTANT:
-    This endpoint returns a plain list because the frontend
-    expects an array.
     """
 
     documents = (
