@@ -336,7 +336,6 @@
 
     </div>
 
-
     <!-- Upload Section -->
     <div class="card">
 
@@ -366,7 +365,6 @@
         <div id="message"></div>
 
     </div>
-
 
     <!-- Documents List -->
     <div class="card">
@@ -399,7 +397,6 @@
 
     </div>
 
-
     <!-- Extraction Results -->
     <div class="card">
 
@@ -415,7 +412,6 @@
 
 </div>
 
-
 <script>
 
     // =====================================================
@@ -423,7 +419,7 @@
     // =====================================================
 
     const API_BASE =
-        "https://ai-document-intelligence-backend-3ohl.onrender.com";
+        "https://ai-document-intelligence-backend-9w4h.onrender.com";
 
 
     // =====================================================
@@ -431,7 +427,6 @@
     // =====================================================
 
     function showMessage(message, type) {
-
         const messageBox = document.getElementById("message");
 
         messageBox.textContent = message;
@@ -441,7 +436,6 @@
 
 
     function hideMessage() {
-
         const messageBox = document.getElementById("message");
 
         messageBox.style.display = "none";
@@ -454,7 +448,6 @@
     // =====================================================
 
     function escapeHtml(value) {
-
         return String(value ?? "")
             .replaceAll("&", "&amp;")
             .replaceAll("<", "&lt;")
@@ -465,7 +458,6 @@
 
 
     function formatDate(value) {
-
         if (!value) {
             return "-";
         }
@@ -479,7 +471,6 @@
 
 
     function getErrorMessage(result) {
-
         if (!result) {
             return "Document processing failed.";
         }
@@ -508,7 +499,6 @@
 
 
     async function parseResponse(response) {
-
         const text = await response.text();
 
         if (!text) {
@@ -526,7 +516,6 @@
 
 
     function normalizeDocumentsResponse(data) {
-
         if (Array.isArray(data)) {
             return data;
         }
