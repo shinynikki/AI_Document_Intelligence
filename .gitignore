@@ -1,0 +1,18 @@
+.env
+__pycache__/
+*.pyc
+
+venv/
+env/
+
+*.db
+*.sqlite
+*.sqlite3
+
+.vscode/
+*.log
+
+uploads/
+New Dataset 1.zip
+New Dataset/
+tesseract-ocr-w64-setup-5.5.3.20260724.exe
