@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -304,768 +305,772 @@
 
 <body>
 
-<header>
-    <h1>Intelligent Document Intelligence</h1>
-    <p>AI-powered document extraction, validation and persistence platform</p>
-</header>
-
-<div class="container">
-
-    <!-- Dashboard -->
-    <div class="dashboard">
-
-        <div class="stat-card">
-            <h3>Total Documents</h3>
-            <div class="number" id="totalDocuments">0</div>
-        </div>
-
-        <div class="stat-card success">
-            <h3>Successful</h3>
-            <div class="number" id="successfulDocuments">0</div>
-        </div>
-
-        <div class="stat-card failed">
-            <h3>Failed</h3>
-            <div class="number" id="failedDocuments">0</div>
-        </div>
-
-        <div class="stat-card na">
-            <h3>Not Applicable</h3>
-            <div class="number" id="notApplicableDocuments">0</div>
-        </div>
-
-    </div>
-
-    <!-- Upload Section -->
-    <div class="card">
-
-        <h2>Upload Document</h2>
-
-        <label for="documentType">Document Type</label>
-
-        <select id="documentType">
-            <option value="invoice">Invoice</option>
-            <option value="balance_sheet">Balance Sheet</option>
-            <option value="profit_loss">Profit & Loss</option>
-            <option value="cash_flow">Cash Flow Statement</option>
-        </select>
-
-        <label for="documentFile">Select File</label>
-
-        <input
-            type="file"
-            id="documentFile"
-            accept=".pdf,.jpg,.jpeg,.png"
-        >
-
-        <button id="processButton" onclick="processDocument()">
-            Process Document
-        </button>
-
-        <div id="message"></div>
-
-    </div>
-
-    <!-- Documents List -->
-    <div class="card">
-
-        <h2>Processed Documents</h2>
-
-        <button class="secondary-button" onclick="loadDocuments()">
-            Refresh Documents
-        </button>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>Filename</th>
-                    <th>Document Type</th>
-                    <th>Status</th>
-                    <th>Overall Result</th>
-                    <th>Created At</th>
-                </tr>
-            </thead>
-
-            <tbody id="documentsTable">
-                <tr>
-                    <td colspan="5" class="empty">
-                        Loading documents...
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-
-    </div>
-
-    <!-- Extraction Results -->
-    <div class="card">
-
-        <h2>Extraction Results</h2>
-
-        <div id="resultArea">
-            <p class="empty">
-                Select a processed document to view its results.
-            </p>
-        </div>
-
-    </div>
-
-</div>
-
-<script>
-
-    // =====================================================
-    // DEPLOYED FASTAPI BACKEND
-    // =====================================================
-
-    const API_BASE =
-        "https://ai-document-intelligence-backend-9w4h.onrender.com";
-
-
-    // =====================================================
-    // MESSAGE FUNCTIONS
-    // =====================================================
-
-    function showMessage(message, type) {
-        const messageBox = document.getElementById("message");
-
-        messageBox.textContent = message;
-        messageBox.className = type;
-        messageBox.style.display = "block";
-    }
-
-
-    function hideMessage() {
-        const messageBox = document.getElementById("message");
-
-        messageBox.style.display = "none";
-        messageBox.textContent = "";
-    }
-
-
-    // =====================================================
-    // SECURITY / FORMATTING HELPERS
-    // =====================================================
-
-    function escapeHtml(value) {
-        return String(value ?? "")
-            .replaceAll("&", "&amp;")
-            .replaceAll("<", "&lt;")
-            .replaceAll(">", "&gt;")
-            .replaceAll('"', "&quot;")
-            .replaceAll("'", "&#039;");
-    }
-
-
-    function formatDate(value) {
-        if (!value) {
-            return "-";
-        }
-
-        try {
-            return new Date(value).toLocaleString();
-        } catch {
-            return value;
-        }
-    }
-
-
-    function getErrorMessage(result) {
-        if (!result) {
-            return "Document processing failed.";
-        }
-
-        if (typeof result.detail === "string") {
-            return result.detail;
-        }
-
-        if (result.detail && typeof result.detail === "object") {
-
-            if (result.detail.error) {
-                return result.detail.error;
-            }
-
-            if (result.detail.message) {
-                return result.detail.message;
-            }
-        }
-
-        if (result.message) {
-            return result.message;
-        }
-
-        return "Document processing failed.";
-    }
-
-
-    async function parseResponse(response) {
-        const text = await response.text();
-
-        if (!text) {
-            return {};
-        }
-
-        try {
-            return JSON.parse(text);
-        } catch {
-            return {
-                detail: text
-            };
-        }
-    }
-
-
-    function normalizeDocumentsResponse(data) {
-        if (Array.isArray(data)) {
-            return data;
-        }
-
-        if (data && Array.isArray(data.documents)) {
-            return data.documents;
-        }
-
-        if (data && Array.isArray(data.items)) {
-            return data.items;
-        }
-
-        return [];
-    }
-
-
-    // =====================================================
-    // PROCESS DOCUMENT
-    // =====================================================
-
-    async function processDocument() {
-
-        const fileInput = document.getElementById("documentFile");
-        const typeInput = document.getElementById("documentType");
-        const button = document.getElementById("processButton");
-
-
-        if (!fileInput.files.length) {
-
-            showMessage(
-                "Please select a document first.",
-                "error"
-            );
-
-            return;
-        }
-
-
-        const selectedFile = fileInput.files[0];
-
-
-        const allowedExtensions = [
-            ".pdf",
-            ".jpg",
-            ".jpeg",
-            ".png"
-        ];
-
-
-        const extension =
-            "." + selectedFile.name.split(".").pop().toLowerCase();
-
-
-        if (!allowedExtensions.includes(extension)) {
-
-            showMessage(
-                "Only PDF, JPG, JPEG and PNG files are supported.",
-                "error"
-            );
-
-            return;
-        }
-
-
-        const formData = new FormData();
-
-        formData.append("file", selectedFile);
-        formData.append("document_type", typeInput.value);
-
-
-        button.disabled = true;
-        button.textContent = "Processing...";
-
-
-        showMessage(
-            "Document is being processed. This may take some time.",
-            "loading"
-        );
-
-
-        try {
-
-            const response = await fetch(
-                `${API_BASE}/api/v1/documents/process`,
-                {
-                    method: "POST",
-                    body: formData
-                }
-            );
-
-
-            const result = await parseResponse(response);
-
-
-            if (!response.ok) {
-                throw new Error(getErrorMessage(result));
-            }
-
-
-            showMessage(
-                "Document processed successfully.",
-                "success"
-            );
-
-
-            displayResult(result);
-
-
-            fileInput.value = "";
-
-
-            await loadDocuments();
-
-
-        } catch (error) {
-
-            console.error(error);
-
-
-            showMessage(
-                error.message || "Document processing failed.",
-                "error"
-            );
-
-        } finally {
-
-            button.disabled = false;
-            button.textContent = "Process Document";
-        }
-    }
-
-
-    // =====================================================
-    // LOAD ALL DOCUMENTS
-    // =====================================================
-
-    async function loadDocuments() {
-
-        try {
-
-            const response = await fetch(
-                `${API_BASE}/api/v1/documents`
-            );
-
-
-            const data = await parseResponse(response);
-
-
-            if (!response.ok) {
-                throw new Error(getErrorMessage(data));
-            }
-
-
-            const documents = normalizeDocumentsResponse(data);
-
-
-            updateDashboard(documents);
-            renderDocumentsTable(documents);
-
-
-        } catch (error) {
-
-            console.error(error);
-
-
-            showMessage(
-                "Could not load documents: " + error.message,
-                "error"
-            );
-
-
-            document.getElementById("documentsTable").innerHTML = `
-                <tr>
-                    <td colspan="5" class="empty">
-                        Could not load documents.
-                    </td>
-                </tr>
-            `;
-        }
-    }
-
-
-    // =====================================================
-    // DASHBOARD STATISTICS
-    // =====================================================
-
-    function updateDashboard(documents) {
-
-        const total = documents.length;
-
-
-        const successful = documents.filter(document => {
-            return document.overall_status === "PASS";
-        }).length;
-
-
-        const failed = documents.filter(document => {
-
-            return document.status === "FAILED" ||
-                   document.overall_status === "FAILED";
-
-        }).length;
-
-
-        const notApplicable = documents.filter(document => {
-
-            return document.overall_status === "NOT_APPLICABLE";
-
-        }).length;
-
-
-        document.getElementById("totalDocuments").textContent = total;
-
-        document.getElementById("successfulDocuments").textContent =
-            successful;
-
-        document.getElementById("failedDocuments").textContent =
-            failed;
-
-        document.getElementById("notApplicableDocuments").textContent =
-            notApplicable;
-    }
-
-
-    // =====================================================
-    // RENDER DOCUMENT TABLE
-    // =====================================================
-
-    function renderDocumentsTable(documents) {
-
-        const table = document.getElementById("documentsTable");
-
-
-        if (!documents.length) {
-
-            table.innerHTML = `
-                <tr>
-                    <td colspan="5" class="empty">
-                        No documents processed yet.
-                    </td>
-                </tr>
-            `;
-
-            return;
-        }
-
-
-        table.innerHTML = documents.map((document) => {
-
-            const filename = document.filename || "-";
-            const documentType = document.document_type || "-";
-            const status = document.status || "-";
-            const overallStatus = document.overall_status || "-";
-            const createdAt = formatDate(document.created_at);
-
-
-            return `
-                <tr
-                    class="clickable"
-                    onclick="loadDocument('${encodeURIComponent(filename)}')"
-                >
-                    <td>${escapeHtml(filename)}</td>
-
-                    <td>
-                        <span class="badge">
-                            ${escapeHtml(documentType)}
-                        </span>
-                    </td>
-
-                    <td class="status ${escapeHtml(status)}">
-                        ${escapeHtml(status)}
-                    </td>
-
-                    <td class="status ${escapeHtml(overallStatus)}">
-                        ${escapeHtml(overallStatus)}
-                    </td>
-
-                    <td>${escapeHtml(createdAt)}</td>
-                </tr>
-            `;
-
-        }).join("");
-    }
-
-
-    // =====================================================
-    // LOAD SINGLE DOCUMENT
-    // =====================================================
-
-    async function loadDocument(encodedFilename) {
-
-        try {
-
-            const filename = decodeURIComponent(encodedFilename);
-
-
-            const response = await fetch(
-                `${API_BASE}/api/v1/documents/${encodeURIComponent(filename)}`
-            );
-
-
-            const result = await parseResponse(response);
-
-
-            if (!response.ok) {
-                throw new Error(getErrorMessage(result));
-            }
-
-
-            displayResult(result);
-
-
-        } catch (error) {
-
-            console.error(error);
-
-
-            showMessage(
-                error.message || "Could not load document.",
-                "error"
-            );
-        }
-    }
-
-
-    // =====================================================
-    // DISPLAY EXTRACTION RESULT
-    // =====================================================
-
-    function displayResult(result) {
-
-        const area = document.getElementById("resultArea");
-
-
-        const extractedData = result.extracted_data || {};
-
-
-        const validations = Array.isArray(result.validations)
-            ? result.validations
-            : [];
-
-
-        const filename = result.filename || "Document";
-        const documentType = result.document_type || "-";
-        const status = result.status || "-";
-        const overallStatus = result.overall_status || "-";
-
-
-        area.innerHTML = `
-
-            <h3>${escapeHtml(filename)}</h3>
-
-
-            <div class="result-grid">
-
-                <div class="result-item">
-                    <strong>Document Type</strong>
-                    ${escapeHtml(documentType)}
-                </div>
-
-
-                <div class="result-item">
-                    <strong>Processing Status</strong>
-
-                    <span class="status ${escapeHtml(status)}">
-                        ${escapeHtml(status)}
-                    </span>
-                </div>
-
-
-                <div class="result-item">
-                    <strong>Overall Validation Result</strong>
-
-                    <span class="status ${escapeHtml(overallStatus)}">
-                        ${escapeHtml(overallStatus)}
-                    </span>
-                </div>
-
-
-                <div class="result-item">
-                    <strong>Created At</strong>
-
-                    ${escapeHtml(formatDate(result.created_at))}
-                </div>
-
+    <header>
+        <h1>Intelligent Document Intelligence</h1>
+        <p>AI-powered document extraction, validation and persistence platform</p>
+    </header>
+
+    <div class="container">
+
+        <!-- Dashboard -->
+        <div class="dashboard">
+
+            <div class="stat-card">
+                <h3>Total Documents</h3>
+                <div class="number" id="totalDocuments">0</div>
             </div>
 
+            <div class="stat-card success">
+                <h3>Successful</h3>
+                <div class="number" id="successfulDocuments">0</div>
+            </div>
 
-            ${
-                result.error_message
-                    ? `
-                        <div class="section-title">
-                            <h3>Error Details</h3>
-                        </div>
+            <div class="stat-card failed">
+                <h3>Failed</h3>
+                <div class="number" id="failedDocuments">0</div>
+            </div>
 
-                        <div class="json-box">
-                            ${escapeHtml(result.error_message)}
-                        </div>
-                    `
-                    : ""
-            }
+            <div class="stat-card na">
+                <h3>Not Applicable</h3>
+                <div class="number" id="notApplicableDocuments">0</div>
+            </div>
 
-
-            <h3 class="section-title">
-                Validation Results
-            </h3>
+        </div>
 
 
-            ${renderValidations(validations)}
+        <!-- Upload Section -->
+        <div class="card">
+
+            <h2>Upload Document</h2>
+
+            <label for="documentType">Document Type</label>
+
+            <select id="documentType">
+                <option value="invoice">Invoice</option>
+                <option value="balance_sheet">Balance Sheet</option>
+                <option value="profit_loss">Profit & Loss</option>
+                <option value="cash_flow">Cash Flow Statement</option>
+            </select>
+
+            <label for="documentFile">Select File</label>
+
+            <input
+                type="file"
+                id="documentFile"
+                accept=".pdf,.jpg,.jpeg,.png"
+            >
+
+            <button id="processButton" onclick="processDocument()">
+                Process Document
+            </button>
+
+            <div id="message"></div>
+
+        </div>
 
 
-            <h3 class="section-title">
-                Extracted Data
-            </h3>
+        <!-- Documents List -->
+        <div class="card">
 
+            <h2>Processed Documents</h2>
 
-            ${renderExtractedData(extractedData)}
+            <button class="secondary-button" onclick="loadDocuments()">
+                Refresh Documents
+            </button>
 
-        `;
-    }
-
-
-    // =====================================================
-    // RENDER VALIDATIONS
-    // =====================================================
-
-    function renderValidations(validations) {
-
-        if (!validations.length) {
-
-            return `
-                <p class="empty">
-                    No validation results available.
-                </p>
-            `;
-        }
-
-
-        return `
             <table>
-
                 <thead>
                     <tr>
-                        <th>Check</th>
-                        <th>Calculated</th>
-                        <th>Reported</th>
-                        <th>Variance</th>
+                        <th>Filename</th>
+                        <th>Document Type</th>
                         <th>Status</th>
+                        <th>Overall Result</th>
+                        <th>Created At</th>
                     </tr>
                 </thead>
 
-
-                <tbody>
-
-                    ${validations.map(validation => {
-
-                        const status = validation.status || "-";
-
-                        let rowClass = "";
-
-
-                        if (status === "PASS") {
-                            rowClass = "validation-pass";
-                        } else if (status === "FAILED") {
-                            rowClass = "validation-failed";
-                        } else if (status === "NOT_APPLICABLE") {
-                            rowClass = "validation-na";
-                        }
-
-
-                        return `
-                            <tr class="${rowClass}">
-
-                                <td>
-                                    ${escapeHtml(
-                                        validation.check ||
-                                        validation.formula ||
-                                        "-"
-                                    )}
-                                </td>
-
-
-                                <td>
-                                    ${escapeHtml(
-                                        validation.calculated ?? "-"
-                                    )}
-                                </td>
-
-
-                                <td>
-                                    ${escapeHtml(
-                                        validation.reported ?? "-"
-                                    )}
-                                </td>
-
-
-                                <td>
-                                    ${escapeHtml(
-                                        validation.variance ?? "-"
-                                    )}
-                                </td>
-
-
-                                <td class="status ${escapeHtml(status)}">
-                                    ${escapeHtml(status)}
-                                </td>
-
-                            </tr>
-                        `;
-
-                    }).join("")}
-
+                <tbody id="documentsTable">
+                    <tr>
+                        <td colspan="5" class="empty">
+                            Loading documents...
+                        </td>
+                    </tr>
                 </tbody>
-
             </table>
-        `;
-    }
+
+        </div>
 
 
-    // =====================================================
-    // RENDER EXTRACTED DATA
-    // =====================================================
+        <!-- Extraction Results -->
+        <div class="card">
 
-    function renderExtractedData(data) {
+            <h2>Extraction Results</h2>
 
-        if (!data || Object.keys(data).length === 0) {
-
-            return `
+            <div id="resultArea">
                 <p class="empty">
-                    No extracted data available.
+                    Select a processed document to view its results.
                 </p>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <script>
+
+        // =====================================================
+        // DEPLOYED FASTAPI BACKEND
+        // =====================================================
+
+        const API_BASE =
+            "https://ai-document-intelligence-backend-9w4h.onrender.com";
+
+
+        // =====================================================
+        // MESSAGE FUNCTIONS
+        // =====================================================
+
+        function showMessage(message, type) {
+            const messageBox = document.getElementById("message");
+
+            messageBox.textContent = message;
+            messageBox.className = type;
+            messageBox.style.display = "block";
+        }
+
+
+        function hideMessage() {
+            const messageBox = document.getElementById("message");
+
+            messageBox.style.display = "none";
+            messageBox.textContent = "";
+        }
+
+
+        // =====================================================
+        // SECURITY / FORMATTING HELPERS
+        // =====================================================
+
+        function escapeHtml(value) {
+            return String(value ?? "")
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll('"', "&quot;")
+                .replaceAll("'", "&#039;");
+        }
+
+
+        function formatDate(value) {
+            if (!value) {
+                return "-";
+            }
+
+            try {
+                return new Date(value).toLocaleString();
+            } catch {
+                return value;
+            }
+        }
+
+
+        function getErrorMessage(result) {
+            if (!result) {
+                return "Document processing failed.";
+            }
+
+            if (typeof result.detail === "string") {
+                return result.detail;
+            }
+
+            if (result.detail && typeof result.detail === "object") {
+
+                if (result.detail.error) {
+                    return result.detail.error;
+                }
+
+                if (result.detail.message) {
+                    return result.detail.message;
+                }
+            }
+
+            if (result.message) {
+                return result.message;
+            }
+
+            return "Document processing failed.";
+        }
+
+
+        async function parseResponse(response) {
+            const text = await response.text();
+
+            if (!text) {
+                return {};
+            }
+
+            try {
+                return JSON.parse(text);
+            } catch {
+                return {
+                    detail: text
+                };
+            }
+        }
+
+
+        function normalizeDocumentsResponse(data) {
+            if (Array.isArray(data)) {
+                return data;
+            }
+
+            if (data && Array.isArray(data.documents)) {
+                return data.documents;
+            }
+
+            if (data && Array.isArray(data.items)) {
+                return data.items;
+            }
+
+            return [];
+        }
+
+
+        // =====================================================
+        // PROCESS DOCUMENT
+        // =====================================================
+
+        async function processDocument() {
+
+            const fileInput = document.getElementById("documentFile");
+            const typeInput = document.getElementById("documentType");
+            const button = document.getElementById("processButton");
+
+
+            if (!fileInput.files.length) {
+
+                showMessage(
+                    "Please select a document first.",
+                    "error"
+                );
+
+                return;
+            }
+
+
+            const selectedFile = fileInput.files[0];
+
+
+            const allowedExtensions = [
+                ".pdf",
+                ".jpg",
+                ".jpeg",
+                ".png"
+            ];
+
+
+            const extension =
+                "." + selectedFile.name.split(".").pop().toLowerCase();
+
+
+            if (!allowedExtensions.includes(extension)) {
+
+                showMessage(
+                    "Only PDF, JPG, JPEG and PNG files are supported.",
+                    "error"
+                );
+
+                return;
+            }
+
+
+            const formData = new FormData();
+
+            formData.append("file", selectedFile);
+            formData.append("document_type", typeInput.value);
+
+
+            button.disabled = true;
+            button.textContent = "Processing...";
+
+
+            showMessage(
+                "Document is being processed. This may take some time.",
+                "loading"
+            );
+
+
+            try {
+
+                const response = await fetch(
+                    `${API_BASE}/api/v1/documents/process`,
+                    {
+                        method: "POST",
+                        body: formData
+                    }
+                );
+
+
+                const result = await parseResponse(response);
+
+
+                if (!response.ok) {
+                    throw new Error(getErrorMessage(result));
+                }
+
+
+                showMessage(
+                    "Document processed successfully.",
+                    "success"
+                );
+
+
+                displayResult(result);
+
+
+                fileInput.value = "";
+
+
+                await loadDocuments();
+
+
+            } catch (error) {
+
+                console.error(error);
+
+
+                showMessage(
+                    error.message || "Document processing failed.",
+                    "error"
+                );
+
+            } finally {
+
+                button.disabled = false;
+                button.textContent = "Process Document";
+            }
+        }
+
+
+        // =====================================================
+        // LOAD ALL DOCUMENTS
+        // =====================================================
+
+        async function loadDocuments() {
+
+            try {
+
+                const response = await fetch(
+                    `${API_BASE}/api/v1/documents`
+                );
+
+
+                const data = await parseResponse(response);
+
+
+                if (!response.ok) {
+                    throw new Error(getErrorMessage(data));
+                }
+
+
+                const documents = normalizeDocumentsResponse(data);
+
+
+                updateDashboard(documents);
+                renderDocumentsTable(documents);
+
+
+            } catch (error) {
+
+                console.error(error);
+
+
+                showMessage(
+                    "Could not load documents: " + error.message,
+                    "error"
+                );
+
+
+                document.getElementById("documentsTable").innerHTML = `
+                    <tr>
+                        <td colspan="5" class="empty">
+                            Could not load documents.
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+
+        // =====================================================
+        // DASHBOARD STATISTICS
+        // =====================================================
+
+        function updateDashboard(documents) {
+
+            const total = documents.length;
+
+
+            const successful = documents.filter(document => {
+                return document.overall_status === "PASS";
+            }).length;
+
+
+            const failed = documents.filter(document => {
+
+                return document.status === "FAILED" ||
+                       document.overall_status === "FAILED";
+
+            }).length;
+
+
+            const notApplicable = documents.filter(document => {
+
+                return document.overall_status === "NOT_APPLICABLE";
+
+            }).length;
+
+
+            document.getElementById("totalDocuments").textContent = total;
+
+            document.getElementById("successfulDocuments").textContent =
+                successful;
+
+            document.getElementById("failedDocuments").textContent =
+                failed;
+
+            document.getElementById("notApplicableDocuments").textContent =
+                notApplicable;
+        }
+
+
+        // =====================================================
+        // RENDER DOCUMENT TABLE
+        // =====================================================
+
+        function renderDocumentsTable(documents) {
+
+            const table = document.getElementById("documentsTable");
+
+
+            if (!documents.length) {
+
+                table.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="empty">
+                            No documents processed yet.
+                        </td>
+                    </tr>
+                `;
+
+                return;
+            }
+
+
+            table.innerHTML = documents.map((document) => {
+
+                const filename = document.filename || "-";
+                const documentType = document.document_type || "-";
+                const status = document.status || "-";
+                const overallStatus = document.overall_status || "-";
+                const createdAt = formatDate(document.created_at);
+
+
+                return `
+                    <tr
+                        class="clickable"
+                        onclick="loadDocument('${encodeURIComponent(filename)}')"
+                    >
+                        <td>${escapeHtml(filename)}</td>
+
+                        <td>
+                            <span class="badge">
+                                ${escapeHtml(documentType)}
+                            </span>
+                        </td>
+
+                        <td class="status ${escapeHtml(status)}">
+                            ${escapeHtml(status)}
+                        </td>
+
+                        <td class="status ${escapeHtml(overallStatus)}">
+                            ${escapeHtml(overallStatus)}
+                        </td>
+
+                        <td>${escapeHtml(createdAt)}</td>
+                    </tr>
+                `;
+
+            }).join("");
+        }
+
+
+        // =====================================================
+        // LOAD SINGLE DOCUMENT
+        // =====================================================
+
+        async function loadDocument(encodedFilename) {
+
+            try {
+
+                const filename = decodeURIComponent(encodedFilename);
+
+
+                const response = await fetch(
+                    `${API_BASE}/api/v1/documents/${encodeURIComponent(filename)}`
+                );
+
+
+                const result = await parseResponse(response);
+
+
+                if (!response.ok) {
+                    throw new Error(getErrorMessage(result));
+                }
+
+
+                displayResult(result);
+
+
+            } catch (error) {
+
+                console.error(error);
+
+
+                showMessage(
+                    error.message || "Could not load document.",
+                    "error"
+                );
+            }
+        }
+
+
+        // =====================================================
+        // DISPLAY EXTRACTION RESULT
+        // =====================================================
+
+        function displayResult(result) {
+
+            const area = document.getElementById("resultArea");
+
+
+            const extractedData = result.extracted_data || {};
+
+
+            const validations = Array.isArray(result.validations)
+                ? result.validations
+                : [];
+
+
+            const filename = result.filename || "Document";
+            const documentType = result.document_type || "-";
+            const status = result.status || "-";
+            const overallStatus = result.overall_status || "-";
+
+
+            area.innerHTML = `
+
+                <h3>${escapeHtml(filename)}</h3>
+
+
+                <div class="result-grid">
+
+                    <div class="result-item">
+                        <strong>Document Type</strong>
+                        ${escapeHtml(documentType)}
+                    </div>
+
+
+                    <div class="result-item">
+                        <strong>Processing Status</strong>
+
+                        <span class="status ${escapeHtml(status)}">
+                            ${escapeHtml(status)}
+                        </span>
+                    </div>
+
+
+                    <div class="result-item">
+                        <strong>Overall Validation Result</strong>
+
+                        <span class="status ${escapeHtml(overallStatus)}">
+                            ${escapeHtml(overallStatus)}
+                        </span>
+                    </div>
+
+
+                    <div class="result-item">
+                        <strong>Created At</strong>
+
+                        ${escapeHtml(formatDate(result.created_at))}
+                    </div>
+
+                </div>
+
+
+                ${
+                    result.error_message
+                        ? `
+                            <div class="section-title">
+                                <h3>Error Details</h3>
+                            </div>
+
+                            <div class="json-box">
+                                ${escapeHtml(result.error_message)}
+                            </div>
+                        `
+                        : ""
+                }
+
+
+                <h3 class="section-title">
+                    Validation Results
+                </h3>
+
+
+                ${renderValidations(validations)}
+
+
+                <h3 class="section-title">
+                    Extracted Data
+                </h3>
+
+
+                ${renderExtractedData(extractedData)}
+
             `;
         }
 
 
-        return `
-            <div class="json-box">
-                ${escapeHtml(JSON.stringify(data, null, 2))}
-            </div>
-        `;
-    }
+        // =====================================================
+        // RENDER VALIDATIONS
+        // =====================================================
+
+        function renderValidations(validations) {
+
+            if (!validations.length) {
+
+                return `
+                    <p class="empty">
+                        No validation results available.
+                    </p>
+                `;
+            }
 
 
-    // =====================================================
-    // INITIAL PAGE LOAD
-    // =====================================================
+            return `
+                <table>
 
-    loadDocuments();
+                    <thead>
+                        <tr>
+                            <th>Check</th>
+                            <th>Calculated</th>
+                            <th>Reported</th>
+                            <th>Variance</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
 
-</script>
+
+                    <tbody>
+
+                        ${validations.map(validation => {
+
+                            const status = validation.status || "-";
+
+                            let rowClass = "";
+
+
+                            if (status === "PASS") {
+                                rowClass = "validation-pass";
+                            } else if (status === "FAILED") {
+                                rowClass = "validation-failed";
+                            } else if (status === "NOT_APPLICABLE") {
+                                rowClass = "validation-na";
+                            }
+
+
+                            return `
+                                <tr class="${rowClass}">
+
+                                    <td>
+                                        ${escapeHtml(
+                                            validation.check ||
+                                            validation.formula ||
+                                            "-"
+                                        )}
+                                    </td>
+
+
+                                    <td>
+                                        ${escapeHtml(
+                                            validation.calculated ?? "-"
+                                        )}
+                                    </td>
+
+
+                                    <td>
+                                        ${escapeHtml(
+                                            validation.reported ?? "-"
+                                        )}
+                                    </td>
+
+
+                                    <td>
+                                        ${escapeHtml(
+                                            validation.variance ?? "-"
+                                        )}
+                                    </td>
+
+
+                                    <td class="status ${escapeHtml(status)}">
+                                        ${escapeHtml(status)}
+                                    </td>
+
+                                </tr>
+                            `;
+
+                        }).join("")}
+
+                    </tbody>
+
+                </table>
+            `;
+        }
+
+
+        // =====================================================
+        // RENDER EXTRACTED DATA
+        // =====================================================
+
+        function renderExtractedData(data) {
+
+            if (!data || Object.keys(data).length === 0) {
+
+                return `
+                    <p class="empty">
+                        No extracted data available.
+                    </p>
+                `;
+            }
+
+
+            return `
+                <div class="json-box">
+                    ${escapeHtml(JSON.stringify(data, null, 2))}
+                </div>
+            `;
+        }
+
+
+        // =====================================================
+        // INITIAL PAGE LOAD
+        // =====================================================
+
+        loadDocuments();
+
+    </script>
 
 </body>
 </html>
