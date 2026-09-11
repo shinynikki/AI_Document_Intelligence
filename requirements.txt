@@ -3,11 +3,10 @@ uvicorn[standard]
 python-multipart
 pydantic
 python-dotenv
-
 google-generativeai
 pymupdf
 Pillow
-
+pytesseract
 sqlalchemy
 pandas
 openpyxl
