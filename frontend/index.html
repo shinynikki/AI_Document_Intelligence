@@ -423,8 +423,7 @@
         // DEPLOYED FASTAPI BACKEND
         // =====================================================
 
-        const API_BASE =
-            "https://ai-document-intelligence-backend-u0t9.onrender.com";
+        const API_BASE = "https://ai-document-intelligence-backend-u0t9.onrender.com";
 
 
         // =====================================================
@@ -637,7 +636,7 @@
 
             } catch (error) {
 
-                console.error(error);
+                console.error("Document processing error:", error);
 
 
                 showMessage(
@@ -683,7 +682,7 @@
 
             } catch (error) {
 
-                console.error(error);
+                console.error("Loading documents error:", error);
 
 
                 showMessage(
@@ -835,7 +834,7 @@
 
             } catch (error) {
 
-                console.error(error);
+                console.error("Loading document error:", error);
 
 
                 showMessage(
@@ -1073,4 +1072,5 @@
     </script>
 
 </body>
+
 </html>
